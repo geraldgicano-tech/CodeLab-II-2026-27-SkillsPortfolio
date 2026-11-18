@@ -1,3 +1,4 @@
+
 # Exercise 1 - Maths Quiz
 
 Develop a GUI using Tkinter that presents the user with quiz of arithmetic problems. Each "play" of the quiz should be 10 questions. The user should initially be presented with a short menu of options to select a difficulty level. It could look something like this:
