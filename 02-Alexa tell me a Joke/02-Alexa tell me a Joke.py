@@ -181,7 +181,7 @@ next_button.grid(row=0, column=1, padx=10)
 
 quit_button = Button(
     jokes_frame,
-    text="Quit",
+    text="Had enough?",
     font=("Arial", 11, "bold"),
     bg=BROWN,
     fg=WHITE,
