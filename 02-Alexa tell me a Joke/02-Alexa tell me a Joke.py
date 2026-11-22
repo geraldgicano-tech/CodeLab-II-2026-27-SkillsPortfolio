@@ -3,12 +3,31 @@ import random
 from tkinter import messagebox
 from pathlib import Path
 
-file_path = (
-Path(__file__).resolve().parent
-/ "jokes"
-/ "randomJokes.txt"
+jokes_file = (
+    Path(__file__).resolve().parent
+    / "jokes"
+    / "randomJokes.txt"
 )
 
+jokes = []
+with jokes_file.open("r", encoding="utf-8") as file:
+    for line in file:
+        line = line.strip()
+        if not line:
+            continue
+        line = line.removeprefix("-").strip()
+        if "?" in line:
+            joke, punchline = line.split("?", 1)
+            joke = joke.strip() + "?"
+            punchline = punchline.strip()
+            if joke and punchline:
+                jokes.append((joke, punchline))
+
+
+
+
+
+        
 
 
 root = Tk()
