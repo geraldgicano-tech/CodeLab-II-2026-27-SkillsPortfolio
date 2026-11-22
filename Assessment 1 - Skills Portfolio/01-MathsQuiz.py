@@ -1,7 +1,13 @@
 from tkinter import *
 import random
 
-operations = ["+", "-", "*",]
+operations =  ["-", "+",]
+quiz_questions = 10
+attempts = 2
+FRAME_BG = "#1E0E5A"
+TEXT_BG = "#2A1770"
+TEXT_FG = "#F2F0FF"
+BUTTON_HOVER = "#4A399E"
 
 def random_operation():
     return random.choice(operations)
@@ -9,14 +15,14 @@ def random_operation():
 
 def randint(difficulty):
     if difficulty == "Easy":
+        min_value = 0
+        max_value = 10
+    elif difficulty == "Medium":
         min_value = 10
         max_value = 100
-    elif difficulty == "Medium":
-        min_value = 100
-        max_value = 1000
     elif difficulty == "Hard":
         min_value = 1000
-        max_value = 10000
+        max_value = 9999
     else:
         raise ValueError("Unknown difficulty")
 
@@ -29,8 +35,6 @@ def correct_answer(num1, num2, operation):
         return num1 + num2
     elif operation == "-":
         return num1 - num2
-    elif operation == "*":
-        return num1 * num2
 
 def switch_frame(frame):
     if frame == "easy":
@@ -99,6 +103,7 @@ def random_question(current_level):
 
 root = Tk()
 root.title("Maths Quiz")
+root.geometry()
 
 mainframe = Frame(root, bg="#FFFFFF")
 mainframe.place(x=0, y=0, width=400, height=400)
@@ -106,11 +111,11 @@ mainframe.place(x=0, y=0, width=400, height=400)
 frameeasy = Frame(root, bg="#FFFFFF")
 frameeasy.place(x=0, y=0, width=400, height=400)
 
-label_easy = Label(frameeasy, text="Easy Level", font=("Helvetica", 16))
+label_easy = Label(frameeasy, text="Easy Level", font=("Arial", 16))
 label_easy.pack(pady=10)
 
 
-question_label_easy = Label(frameeasy, text="", font=("Helvetica", 14))
+question_label_easy = Label(frameeasy, text="", font=("Arial", 14))
 question_label_easy.pack(pady=10)
 
 user_answer_easy = Entry(frameeasy)
