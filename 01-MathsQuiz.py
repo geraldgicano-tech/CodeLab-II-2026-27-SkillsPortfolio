@@ -80,23 +80,19 @@ def check_answer(num1, num2, operation, user_answer):
 
 def submit_answer(current_level):
     global tries_remaining, score, quiz_advancing
-
     if quiz_advancing:
         return
-
     if current_level == "easy":
         answer_entry = easy_answer_user
     elif current_level == "moderate":
         answer_entry = moderate_answer_user
     else:
         answer_entry = hard_answer_user
-
     try:
         user_answer = int(answer_entry.get())
     except ValueError:
         feedback_labels[current_level].config(text="Solve the Question!")
         return
-
     num1, num2, operation = current_question
     if check_answer(num1, num2, operation, user_answer):
         score += 1
