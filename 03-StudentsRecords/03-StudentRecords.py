@@ -83,6 +83,7 @@ class StudentApp:
         root.geometry("1050x600")
         root.configure(bg=BG_MAIN)
         self.build_left_panel()
+        self.build_middle_panel()
         self.load_data()
 
     def build_left_panel(self):
@@ -98,6 +99,34 @@ class StudentApp:
 
         self.tree = ttk.Treeview(left, columns=("name",), show="tree", height=20)
         self.tree.pack(fill="both", expand=True, padx=10, pady=10)
+        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+
+    def build_middle_panel(self):
+        mid = tk.Frame(self.root, bg=BG_CARD, width=400)
+        mid.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        mid.pack_propagate(False)
+        tk.Label(mid, text="Profile", font=("Segoe UI", 14, "bold"), bg=BG_CARD, fg=TEXT_DARK).pack(anchor="w", padx=15, pady=(10, 10))
+        
+        self.empty_lbl = tk.Label(mid, text="Select a student...", font=("Segoe UI", 11), bg=BG_CARD, fg=TEXT_MUTED)
+        self.empty_lbl.pack(expand=True)
+        
+        self.prof = tk.Frame(mid, bg="#F8FAFC", padx=20, pady=20)
+        self.name_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 18, "bold"), bg="#F8FAFC", anchor="w")
+        self.id_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 10), bg="#F8FAFC", fg=TEXT_MUTED, anchor="w")
+        self.grade_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 24, "bold"), bg="#F8FAFC", anchor="w")
+        tk.Frame(self.prof, height=2, bg="#E2E8F0").pack(fill="x", pady=15)
+        self.cw_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 12), bg="#F8FAFC", anchor="w")
+        self.exam_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 12), bg="#F8FAFC", anchor="w")
+        self.total_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 14, "bold"), bg="#F8FAFC", anchor="w")
+        self.pct_lbl = tk.Label(self.prof, text="", font=("Segoe UI", 14, "bold"), bg="#F8FAFC", anchor="w")
+        
+        self.name_lbl.pack(fill="x")
+        self.id_lbl.pack(fill="x")
+        self.grade_lbl.pack(fill="x")
+        self.cw_lbl.pack(fill="x", pady=2)
+        self.exam_lbl.pack(fill="x", pady=2)
+        self.total_lbl.pack(fill="x", pady=(10, 2))
+        self.pct_lbl.pack(fill="x")
 
     def load_data(self):
         try:
@@ -114,7 +143,33 @@ class StudentApp:
             self.tree.insert("", "end", iid=str(s["code"]), text=" " + s['name'] + " (" + str(s['code']) + ")")
 
     def filter_list(self):
-        pass
+        q = self.search_var.get().strip().lower()
+        if not q:
+            self.refresh_tree(students)
+            return
+        match = [s for s in students if q in s["name"].lower() or q in str(s["code"])]
+        self.refresh_tree(match)
+
+    def on_select(self, event):
+        sel = self.tree.selection()
+        if not sel: return
+        c = int(sel[0])
+        for s in students:
+            if s["code"] == c:
+                self.show_profile(s)
+                break
+
+    def show_profile(self, s):
+        self.empty_lbl.pack_forget()
+        self.prof.pack(fill="both", expand=True, pady=(0, 10))
+        self.name_lbl.config(text=s["name"])
+        self.id_lbl.config(text="ID: " + str(s["code"]))
+        self.grade_lbl.config(text="Grade " + s["grade"], fg=get_grade_color(s["grade"]))
+        cw_txt = "Coursework: " + str(s["cw_total"]) + "/" + str(MAX_CW) + "  (" + str(s["cw1"]) + ", " + str(s["cw2"]) + ", " + str(s["cw3"]) + ")"
+        self.cw_lbl.config(text=cw_txt)
+        self.exam_lbl.config(text="Exam: " + str(s["exam"]) + "/" + str(MAX_EXAM))
+        self.total_lbl.config(text="Total Score: " + str(s["total"]) + "/" + str(MAX_TOTAL))
+        self.pct_lbl.config(text="Percentage: " + "{:.2f}".format(s["percent"]) + "%")
 
 if __name__ == "__main__":
     root = tk.Tk()
