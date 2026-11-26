@@ -75,25 +75,46 @@ def student_save():
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(raw, f, indent=2)
 
-
 class StudentApp:
     def __init__(self, root):
         self.root = root
         self.search_var = tk.StringVar()
-
         root.title("Student Dashboard")
         root.geometry("1050x600")
         root.configure(bg=BG_MAIN)
-
+        self.build_left_panel()
         self.load_data()
+
+    def build_left_panel(self):
+        left = tk.Frame(self.root, bg=BG_CARD, width=280)
+        left.pack(side="left", fill="y", padx=10, pady=10)
+        left.pack_propagate(False)
+        tk.Label(left, text="Students", font=("Segoe UI", 14, "bold"), bg=BG_CARD, fg=TEXT_DARK).pack(anchor="w", padx=10, pady=(10, 5))
+        
+        s_row = tk.Frame(left, bg=BG_CARD)
+        s_row.pack(fill="x", padx=10, pady=5)
+        tk.Entry(s_row, textvariable=self.search_var, width=20).pack(side="left", fill="x", expand=True)
+        tk.Button(s_row, text="Find", command=self.filter_list, bg=ACCENT, fg="white").pack(side="left", padx=(4,0))
+
+        self.tree = ttk.Treeview(left, columns=("name",), show="tree", height=20)
+        self.tree.pack(fill="both", expand=True, padx=10, pady=10)
 
     def load_data(self):
         try:
             load_Stu()
-            print("Loaded " + str(len(students)) + " students successfully.")
+            self.refresh_tree()
         except FileNotFoundError:
             print("Could not find the JSON file")
 
+    def refresh_tree(self, show_list=None):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+        source = show_list if show_list else students
+        for s in source:
+            self.tree.insert("", "end", iid=str(s["code"]), text=" " + s['name'] + " (" + str(s['code']) + ")")
+
+    def filter_list(self):
+        pass
 
 if __name__ == "__main__":
     root = tk.Tk()
