@@ -84,6 +84,7 @@ class StudentApp:
         root.configure(bg=BG_MAIN)
         self.build_left_panel()
         self.build_middle_panel()
+        self.build_right_panel()
         self.load_data()
 
     def build_left_panel(self):
@@ -128,6 +129,18 @@ class StudentApp:
         self.total_lbl.pack(fill="x", pady=(10, 2))
         self.pct_lbl.pack(fill="x")
 
+    def build_right_panel(self):
+        right = tk.Frame(self.root, bg=BG_MAIN, width=180)
+        right.pack(side="right", fill="y", padx=(0, 10), pady=10)
+        right.pack_propagate(False)
+        tk.Label(right, text="Actions", font=("Segoe UI", 12, "bold"), bg=BG_MAIN, fg=TEXT_MUTED).pack(anchor="w", pady=(10, 10))
+        self.mk_btn(right, "Add Student", self.add_dialog, ACCENT)
+        self.mk_btn(right, "Update Student", self.update_dialog, "#64748B")
+        self.mk_btn(right, "Delete Student", self.delete_dialog, DANGER)
+
+    def mk_btn(self, p, txt, cmd, col):
+        tk.Button(p, text=txt, command=cmd, font=("Segoe UI", 10, "bold"), bg=col, fg="white", relief="flat", pady=8).pack(fill="x", pady=4)
+
     def load_data(self):
         try:
             load_Stu()
@@ -170,6 +183,96 @@ class StudentApp:
         self.exam_lbl.config(text="Exam: " + str(s["exam"]) + "/" + str(MAX_EXAM))
         self.total_lbl.config(text="Total Score: " + str(s["total"]) + "/" + str(MAX_TOTAL))
         self.pct_lbl.config(text="Percentage: " + "{:.2f}".format(s["percent"]) + "%")
+
+    def add_dialog(self):
+        StudentForm(self, "add", self.add_student)
+
+    def add_student(self, d):
+        rec = create_record(d["code"], d["name"], d["cw1"], d["cw2"], d["cw3"], d["exam"])
+        students.append(rec)
+        student_save()
+        self.refresh_tree()
+        self.show_profile(rec)
+
+    def delete_dialog(self):
+        c = self.ask_code("delete")
+        if c is None: return
+        for s in students:
+            if s["code"] == c:
+                if messagebox.askyesno("Delete", "Are you sure?"):
+                    students.remove(s)
+                    student_save()
+                    self.refresh_tree()
+                    self.empty_lbl.pack(expand=True)
+                    self.prof.pack_forget()
+                return
+
+    def update_dialog(self):
+        c = self.ask_code("update")
+        if c is None: return
+        for s in students:
+            if s["code"] == c:
+                StudentForm(self, "update", lambda d: self.update_student(s, d), s)
+                return
+
+    def update_student(self, old, d):
+        new = create_record(d["code"], d["name"], d["cw1"], d["cw2"], d["cw3"], d["exam"])
+        i = students.index(old)
+        students[i] = new
+        student_save()
+        self.refresh_tree()
+        self.show_profile(new)
+
+    def ask_code(self, action):
+        d = tk.Toplevel(self.root)
+        d.title("ID")
+        d.geometry("250x120")
+        tk.Label(d, text="Enter ID to " + action).pack(pady=5)
+        e = tk.Entry(d)
+        e.pack(pady=5)
+        e.focus()
+        res = {"v": None}
+        def ok():
+            try: res["v"] = int(e.get())
+            except: pass
+            d.destroy()
+        tk.Button(d, text="OK", command=ok).pack(pady=5)
+        d.wait_window()
+        return res["v"]
+
+class StudentForm(tk.Toplevel):
+    def __init__(self, app, mode, on_save, stu=None):
+        super().__init__(app.root)
+        self.on_save = on_save
+        self.f = {}
+        self.title(mode.capitalize() + " Student")
+        self.geometry("350x300")
+        data = [("ID", "code"), ("Name", "name"), ("CW1", "cw1"), ("CW2", "cw2"), ("CW3", "cw3"), ("Exam", "exam")]
+        for txt, k in data:
+            r = tk.Frame(self)
+            r.pack(fill="x", padx=20, pady=4)
+            tk.Label(r, text=txt, width=10, anchor="w").pack(side="left")
+            v = tk.StringVar()
+            if stu: v.set(str(stu[k]))
+            self.f[k] = v
+            tk.Entry(r, textvariable=v).pack(side="left")
+        tk.Button(self, text="Save", command=self.save, bg=ACCENT, fg="white").pack(pady=15)
+
+    def save(self):
+        try:
+            d = {
+                "code": int(self.f["code"].get()),
+                "name": self.f["name"].get(),
+                "cw1": int(self.f["cw1"].get()),
+                "cw2": int(self.f["cw2"].get()),
+                "cw3": int(self.f["cw3"].get()),
+                "exam": int(self.f["exam"].get())
+            }
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numbers")
+            return
+        self.on_save(d)
+        self.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()
