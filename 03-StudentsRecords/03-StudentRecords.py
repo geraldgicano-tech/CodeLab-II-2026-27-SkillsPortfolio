@@ -102,6 +102,8 @@ class StudentApp:
         self.tree.pack(fill="both", expand=True, padx=10, pady=10)
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
 
+        tk.Button(left, text="View All / Stats", command=self.show_all, bg="#E2E8F0").pack(fill="x", padx=10, pady=(0, 10))
+
     def build_middle_panel(self):
         mid = tk.Frame(self.root, bg=BG_CARD, width=400)
         mid.pack(side="left", fill="both", expand=True, padx=10, pady=10)
@@ -137,6 +139,7 @@ class StudentApp:
         self.mk_btn(right, "Add Student", self.add_dialog, ACCENT)
         self.mk_btn(right, "Update Student", self.update_dialog, "#64748B")
         self.mk_btn(right, "Delete Student", self.delete_dialog, DANGER)
+        self.mk_btn(right, "Sort Records", self.sort_dialog, "#64748B")
 
     def mk_btn(self, p, txt, cmd, col):
         tk.Button(p, text=txt, command=cmd, font=("Segoe UI", 10, "bold"), bg=col, fg="white", relief="flat", pady=8).pack(fill="x", pady=4)
@@ -184,6 +187,22 @@ class StudentApp:
         self.total_lbl.config(text="Total Score: " + str(s["total"]) + "/" + str(MAX_TOTAL))
         self.pct_lbl.config(text="Percentage: " + "{:.2f}".format(s["percent"]) + "%")
 
+    def show_all(self):
+        w = tk.Toplevel(self.root)
+        w.title("All Records")
+        w.geometry("600x500")
+        t = tk.Text(w, font=("Consolas", 10), wrap="word")
+        t.pack(fill="both", expand=True, padx=10, pady=10)
+        out = ""
+        for i, s in enumerate(students, 1):
+            out += "[" + str(i) + "] " + s['name'] + " (" + str(s['code']) + ")\n"
+            out += "CW: " + str(s['cw_total']) + "/" + str(MAX_CW) + " | Exam: " + str(s['exam']) + "/" + str(MAX_EXAM) + " | Grade: " + s['grade'] + "\n\n"
+        if students:
+            avg = sum(s["percent"] for s in students) / len(students)
+            out += "Class Average: " + "{:.2f}".format(avg) + "%"
+        t.insert("1.0", out)
+        t.config(state="disabled")
+
     def add_dialog(self):
         StudentForm(self, "add", self.add_student)
 
@@ -222,6 +241,10 @@ class StudentApp:
         student_save()
         self.refresh_tree()
         self.show_profile(new)
+
+    def sort_dialog(self):
+        students.sort(key=lambda x: x['name'])
+        self.refresh_tree()
 
     def ask_code(self, action):
         d = tk.Toplevel(self.root)
